@@ -59,10 +59,16 @@ void Setup_SD() {
 
 
 
-void Write_SD(double datas[], int count) {
+
+void storeData(double values[], int count) {
   for (int i = 0; i < count; i++) {
-    writeData[i] = datas[i];
+    if (writeIndex < Data_Nunber_Of_Pieces) {
+      writeData[writeIndex] = values[i];
+      writeIndex++;
+    } else {
+      // 満杯なら自動的に書き込み要求
+      writeRequest = true;
+      break; // 満杯なので終了
+    }
   }
-  writeCount = count;
-  writeRequest = true;
 }

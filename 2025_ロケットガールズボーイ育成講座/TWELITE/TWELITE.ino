@@ -14,11 +14,9 @@ void loop() {
   Serial2.println("test_start!!");
   Serial2.println("123456789");
   Serial2.println("yumenoshin");
-  Serial2.println("夢之進");
-  Serial2.println("🙇");
+  Serial2.println("こんにちは");
   delay(100);
 
-  ////delay(100); // 少し待つと受信が安定します
 
   if (Serial2.available()) {
     delay(100);

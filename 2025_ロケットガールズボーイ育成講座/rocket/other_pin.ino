@@ -41,14 +41,14 @@ void Setup_other_pin() {
 
 
 void buzz_start() {
-  tone(2, 1000, 200);
-  delay(250);
-  tone(2, 1200, 150);
+  tone(2, 880, 150);
   delay(200);
-  tone(2, 1400, 100);
-  delay(150);
-  tone(2, 1600, 80);
-  delay(100);
+  tone(2, 880, 150);
+  delay(200);
+  tone(2, 987, 400);
+  delay(450);
+  tone(2, 1319, 600);
+  delay(700);
   noTone(2);
 }
 

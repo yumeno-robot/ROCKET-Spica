@@ -4,14 +4,17 @@ TinyGPSPlus gps;
 
 
 void setup() {
+
+  delay(4000);
   Serial.begin(115200);
-  Serial1.begin(4800);    // Serial monitor       // GPS module
+  Serial.println("__");
+  Serial1.begin(9600);    // Serial monitor       // GPS module
 }
 
 void loop() {
   while (Serial1.available() > 0) {
     gps.encode(Serial1.read());
-    
+
     if (gps.location.isUpdated()) {
       Serial.print("Latitude: ");
       Serial.println(gps.location.lat(), 6);

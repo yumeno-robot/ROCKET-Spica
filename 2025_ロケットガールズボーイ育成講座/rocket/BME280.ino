@@ -14,7 +14,7 @@ Adafruit_BME280 bme;
 
 
 void Setup_BME280() {
-  
+
   Wire.setSDA(8);
   Wire.setSCL(9);
   Wire.begin();
@@ -32,38 +32,46 @@ void Read_BME280() {
 
   if (error_BNE280) {
     bme.takeForcedMeasurement();
-    printValues();
+
+    double Temperature = bme.readTemperature();
+    double Pressure = bme.readPressure() / 100.0F;
+    double Approx = bme.readAltitude(SEALEVELPRESSURE_HPA);
+    double Humidity = bme.readHumidity();
+
+
+    if (debug) {
+      Serial.print("Temperature = ");
+      Serial.print(Temperature);
+      Serial.print(" *C");
+      Serial.print("\t");
+
+      Serial.print("Pressure = ");
+      Serial.print(Pressure);
+      Serial.print(" hPa");
+      Serial.print("\t");
+
+      Serial.print("Approx. Altitude = ");
+      Serial.print(Approx);
+      Serial.print(" m");
+      Serial.print("\t");
+
+      Serial.print("Humidity = ");
+      Serial.print(Humidity);
+      Serial.print(" %");
+      Serial.print("\t");
+
+      Serial.println();
+    }
+
+
+    double val_BME280[4] = {Temperature, Pressure, Approx, Humidity};
+    storeData(val_BME280, 4);
+
+
   } else {
-    Serial.println("NO BEM280__________________________________________");
+    if (debug) {
+      Serial.println("NO BEM280__________________________________________");
+    }
   }
 
-}
-
-
-
-
-
-
-void printValues() {
-  Serial.print("Temperature = ");
-  Serial.print(bme.readTemperature());
-  Serial.println(" *C");
-
-  Serial.print("Pressure = ");
-
-  Serial.print(bme.readPressure() / 100.0F);
-  Serial.println(" hPa");
-
-  Serial.print("Approx. Altitude = ");
-  Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
-  Serial.println(" m");
-
-  Serial.print("Humidity = ");
-  Serial.print(bme.readHumidity());
-  Serial.println(" %");
-
-  Serial.println();
-
-  double val_BME280[4] = {bme.readTemperature(), bme.readPressure() / 100.0F, bme.readAltitude(SEALEVELPRESSURE_HPA), bme.readHumidity()};
-  Write_SD(val_BME280, 4);
 }
