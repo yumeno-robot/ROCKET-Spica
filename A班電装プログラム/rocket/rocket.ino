@@ -2,18 +2,20 @@
 #include <SPI.h>
 #include <SD.h>
 
-
+//SDカード書き込み必須グローバル変数
 const int Data_Nunber_Of_Pieces = 20;
 volatile double writeData[Data_Nunber_Of_Pieces];
 volatile int writeCount = 0;
 volatile bool writeRequest = false;
 volatile int writeIndex = 0;    // 現在の書き込み位置
 
-
+//センサー実装可視化変数
 volatile bool error_SD = true;
 bool error_BNO055 = true;
 bool error_BNE280 = true;
 bool error_GPS = true;
+
+//デバック変数
 //bool debug = true;    //serial.printをloop関数内でやるか否なか
 bool debug = false;     //serial.printをloop関数内でやるか否なか
 
@@ -28,7 +30,8 @@ void setup() {
 
   Setup_SD();
   File dataFile = SD.open("datalog.txt", FILE_WRITE);
-  dataFile.print("START!!");
+  delay(50);
+  dataFile.print("2025年御宿共同打ち上げ実験　AチームログSTART");
   dataFile.println();
   dataFile.flush();
   dataFile.close();
@@ -66,7 +69,7 @@ void loop() {
 
 
 
-  //送信情報"開始信号　時間　加速度XYZ　ジャイロZYX　高度　気圧　温度　緯度　経度　解放否か　フライトピン否か　終了信号"
+  //送信情報"開始信号　時間　気圧　高度　温度　加速度XYZ　ジャイロZYX　緯度　経度　解放否か　フライトピン否か　終了信号"
   Sent_TWELITE();
   Sent_test_TWELITE();
 
