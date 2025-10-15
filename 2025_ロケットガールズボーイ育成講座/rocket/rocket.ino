@@ -10,11 +10,14 @@ volatile bool writeRequest = false;
 volatile int writeIndex = 0;    // 現在の書き込み位置
 
 
-bool error_SD = true;
+volatile bool error_SD = true;
 bool error_BNO055 = true;
 bool error_BNE280 = true;
 bool error_GPS = true;
-bool debug = true;//serial.printをloop関数内でやるか否なか
+//bool debug = true;    //serial.printをloop関数内でやるか否なか
+bool debug = false;     //serial.printをloop関数内でやるか否なか
+
+
 
 
 void setup() {
@@ -52,6 +55,9 @@ void loop() {
   Read_BME280();
   Read_BNO055();
   //Read_GPS();
+  Read_Twilight();
+
+
 
   //SD書き込みコール
   writeRequest = true;
@@ -59,6 +65,10 @@ void loop() {
   writeRequest = false;
 
 
+
+  //送信情報"開始信号　時間　加速度XYZ　ジャイロZYX　高度　気圧　温度　緯度　経度　解放否か　フライトピン否か　終了信号"
+  Sent_TWELITE();
+  Sent_test_TWELITE();
 
 }
 
@@ -68,7 +78,6 @@ void loop1() {
     if (writeRequest) {
       writeRequest = false;
       File dataFile = SD.open("datalog.txt", FILE_WRITE);
-
 
       if (dataFile) {
         dataFile.print(millis());
@@ -81,11 +90,13 @@ void loop1() {
         dataFile.flush();
         dataFile.close();
       }
+      //if (debug) {
+      // Serial.println("SD書き込み完了");
+      //}
     }
   } else {
     if (debug) {
       Serial.println("NO SD______________________________________________");
     }
   }
-
 }
