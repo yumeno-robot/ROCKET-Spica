@@ -5,7 +5,7 @@
 //SDカード書き込み必須グローバル変数
 const int Data_Nunber_Of_Pieces = 20;
 volatile double writeData[Data_Nunber_Of_Pieces];
-volatile int writeCount = 0;
+//volatile int writeCount = 0;
 volatile bool writeRequest = false;
 volatile int writeIndex = 0;    // 現在の書き込み位置
 
@@ -58,20 +58,21 @@ void loop() {
   Read_BME280();
   Read_BNO055();
   //Read_GPS();
-  Read_Twilight();
+  //Read_Twilight();
 
 
 
   //SD書き込みコール
   writeRequest = true;
-  writeIndex = 0;
-  writeRequest = false;
+
+
+
 
 
 
   //送信情報"開始信号　時間　気圧　高度　温度　加速度XYZ　ジャイロZYX　緯度　経度　解放否か　フライトピン否か　終了信号"
-  Sent_TWELITE();
-  Sent_test_TWELITE();
+  //Sent_TWELITE();
+  //Sent_test_TWELITE();
 
 }
 
@@ -79,13 +80,12 @@ void loop() {
 void loop1() {
   if (error_SD) {
     if (writeRequest) {
-      writeRequest = false;
       File dataFile = SD.open("datalog.txt", FILE_WRITE);
 
       if (dataFile) {
         dataFile.print(millis());
         dataFile.print(",");
-        for (int i = 0; i < writeCount; i++) {
+        for (int i = 0; i < writeIndex; i++) {
           dataFile.print(writeData[i]);
           dataFile.print(",");
         }
@@ -93,9 +93,12 @@ void loop1() {
         dataFile.flush();
         dataFile.close();
       }
-      //if (debug) {
-      // Serial.println("SD書き込み完了");
-      //}
+      if (debug) {
+        Serial.println("SD書き込み完了");
+      }
+
+      writeIndex = 0;
+      writeRequest = false;
     }
   } else {
     if (debug) {
