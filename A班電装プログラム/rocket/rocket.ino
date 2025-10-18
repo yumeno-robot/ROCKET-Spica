@@ -5,7 +5,6 @@
 //SDカード書き込み必須グローバル変数
 const int Data_Nunber_Of_Pieces = 20;
 volatile double writeData[Data_Nunber_Of_Pieces];
-//volatile int writeCount = 0;
 volatile bool writeRequest = false;
 volatile int writeIndex = 0;    // 現在の書き込み位置
 
@@ -20,7 +19,8 @@ bool error_GPS = true;
 bool debug = false;     //serial.printをloop関数内でやるか否なか
 
 
-
+bool motor_flag = false;//トワイライトによるフラグ
+bool motor_forced_open = false;
 
 void setup() {
   delay(5000);
@@ -42,6 +42,7 @@ void setup() {
   Setup_GPS();
 
   buzz_start();
+  //servo(0);//閉じる
 }
 
 void setup1() {
@@ -53,28 +54,39 @@ void loop() {
     Serial.println("start__________________________________");
   }
 
+  /*
+    if ((Read_tlg_motor() == 0) || (motor_flag == true)) {
+      servo(90);//開ける
+    } else {
+      servo(0);//閉じる
+
+    }
+  */
 
 
-  Read_BME280();
-  Read_BNO055();
+  Read_Twilight();
+  //Read_BME280();
+  Read_Twilight();
+  ////Read_BNO055();
+  Read_Twilight();
   //Read_GPS();
-  //Read_Twilight();
-
-
+  controlMotor();
 
   //SD書き込みコール
-  writeRequest = true;
-
-
-
-
+  //writeRequest = true;
 
 
   //送信情報"開始信号　時間　気圧　高度　温度　加速度XYZ　ジャイロZYX　緯度　経度　解放否か　フライトピン否か　終了信号"
+  //Make_Twelite_Log(617);
+  //Make_Twelite_Log(2);
+  //Make_Twelite_Log(54);
+  //Make_Twelite_Log(87);
+  //Make_Twelite_Log(567);
   //Sent_TWELITE();
-  //Sent_test_TWELITE();
 
 }
+
+
 
 
 void loop1() {

@@ -3,9 +3,6 @@
 Servo myservo;
 
 
-
-
-
 int notes[] = {
   262, // ド (C4)
   294, // レ (D4)
@@ -106,6 +103,9 @@ int Read_tlg_motor() {
   } else {
     return_y = 0;
   }
+  //if (debug) {
+  Serial.println(return_y);
+  //}
   return return_y;
 }
 
@@ -115,14 +115,20 @@ int Read_foto() {
   int return_y;
   if (y > 500) {
     return_y = 1;
+    motor_flag = true;
   } else {
     return_y = 0;
   }
+  //if (debug) {
+  Serial.println(return_y);
+  //}
   return return_y;
 }
 
 
-int Read_flite_pin() {
+/*
+
+  int Read_flite_pin() {
   int y = analogRead(28);
   int return_y;
   if (y > 500) {
@@ -130,5 +136,9 @@ int Read_flite_pin() {
   } else {
     return_y = 0;
   }
+  //if (debug) {
+  Serial.println(return_y);
+  //}
   return return_y;
-}
+  }
+*/

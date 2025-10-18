@@ -1,4 +1,6 @@
 
+//解放用モーター　仕様について　　右＝閉じる　左＝開ける　
+
 #include <Wire.h>
 #include <SPI.h>
 #include <Adafruit_Sensor.h>
@@ -66,6 +68,10 @@ void Read_BME280() {
 
     double val_BME280[4] = {Temperature, Pressure, Approx, Humidity};
     storeData(val_BME280, 4);
+    //Make_Twelite_Log(Temperature);
+    //Make_Twelite_Log(Pressure);
+    //Make_Twelite_Log(Approx);
+    //Make_Twelite_Log(Humidity);
 
 
   } else {

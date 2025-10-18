@@ -13,11 +13,11 @@ bool Reset_Twelite_Log = false;
 int Log_Write_Count = 0;
 const int Log_count_max = 10;
 double Log_Write_Datas[Log_count_max];
-
+unsigned long t1 = 0;
 
 void Make_Twelite_Log(double Value) {
   if (Reset_Twelite_Log) {
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < Log_count_max; i++) {
       Log_Write_Datas[i] = 0;
     }
     Log_Write_Count = 0;
@@ -31,25 +31,37 @@ void Make_Twelite_Log(double Value) {
 }
 
 void Sent_TWELITE() {
-  Serial2.print("START");
-  for (int i = 0; i < Log_Write_Count; i++) {//ここの数を変えたほうが良き。
-    Serial2.print(",");
-    Serial2.print(Log_Write_Datas[i], 3);
+  if (t1 == 0) {
+    t1 = millis();
+  } else if (millis() - t1 >= 50) {
+    Serial2.print("START");
+    //Serial.print("START");
+    for (int i = 0; i < Log_Write_Count; i++) {//ここの数を変えたほうが良き。
+      Serial2.print(",");
+      Serial2.print(Log_Write_Datas[i], 3);
+      //Serial.print(",");
+      //Serial.print(Log_Write_Datas[i], 3);
+    }
+    Serial2.print(",FINISH\n");
+    t1 = 0;
   }
-  Serial2.print(",FINISH\n");
+  //Serial.print(",FINISH\n");
   Reset_Twelite_Log = true;
 }
 
 
 
 
-
+//Sent_test_TWELITE();
 void Sent_test_TWELITE() {
-  Serial2.println("test_start!!");
-  Serial2.println("123456789");
-  Serial2.println("yumenoshin");
-  Serial2.println("夢之進");
-  Serial2.println("🙇");
+  Serial2.print("test_start!!  ");
+  Serial2.print("123456789  ");
+  Serial2.print("yumenoshin  ");
+  Serial2.print("夢之進  ");
+  Serial2.print("🙇  ");
+  Serial2.print(111111);
+  Serial2.print(876543);
+  Serial2.print(987654);
 }
 
 
@@ -76,6 +88,11 @@ void Read_Twilight() {
         rxBuffer[rxIndex] = '\0';     // 文字列終端
         Serial.print("受信データ: ");
         Serial.println(rxBuffer);     // まとめて出力
+
+        if (strcmp(rxBuffer, "あける") == 0) {
+          Serial.println("ok");
+          motor_flag = true;
+        }
 
         rxIndex = 0;                  // 次のデータに備えてリセット
       }

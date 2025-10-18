@@ -45,6 +45,12 @@ void loop() {
   Serial.print("フライトピン");
   Serial.println(analogRead(28));
 
+  if (analogRead(27) > 500) {
+    myservo.write(0);
+  } else if (analogRead(27) < 500) {
+    myservo.write(180);
+  }
+
 
 
   /*
