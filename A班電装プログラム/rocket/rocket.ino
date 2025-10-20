@@ -23,6 +23,32 @@ bool motor_flag = false;//トワイライトによるフラグ
 bool motor_forced_open = false;
 
 
+unsigned long prevMillis = 0;
+const unsigned long interval = 10;  // [ms] ループ周期（10msごとに監視）
+
+// 加速度Z監視用
+int overGcount = 0;
+const float ACCEL_THRESHOLD = 19.6;     // 2G = 9.8 * 2 [m/s^2]
+const int CONTINUE_TIME_MS = 200;       // 継続時間 [ms]
+const int REQUIRED_COUNT = CONTINUE_TIME_MS / interval;
+
+// 気圧監視用
+float prevPressure = 0.0;
+int decreaseCount = 0;
+
+// 離床検知フラグ（例）
+bool liftOffDetected = false;  // 離床検知済みか
+float ACCEL_THRESHOLD_HIGH = 19.6; // 2G [m/s²]
+float ACCEL_THRESHOLD_LOW  = 9.0;  // 閾値下回り判定（自由落下近似）
+
+// 状態管理用フラグ
+bool accelOver2G = false;
+bool burnEndFlag = false;
+
+
+bool Write_Sd_FirstTIME = false;
+double Flight = false;
+double flight_time;
 
 
 void setup() {
@@ -57,6 +83,9 @@ void loop() {
     Serial.println("start__________________________________");
   }
 
+
+
+  //______________全センサー値の取得__________________________
   Read_Twilight();
   Read_BME280();
   Read_Twilight();
@@ -65,44 +94,66 @@ void loop() {
   Read_GPS();
   controlMotor();
 
-  //SD書き込みコール
+  //___________SD書き込みコール______________________________
   writeRequest = true;
+
+
+
+
 
 
   //___________以下にアルゴリズム追加____________________________
 
-
-  //燃焼終了しているか否か　
-  //フライトピンが抜けているか否か OK
-  //フライトピン時間            OK
-  //気圧の直接値　　return
-  //加速度直接値   return
+  
   Read_filtepin();
 
 
-  /*
+  unsigned long now = millis();
+  if (now - prevMillis >= interval) {
+    prevMillis = now;
+
 
     if (Flight) {
-      フライトピンが空いていれば
 
 
-      if () {
-        加速度センサーOR気圧センサー
+      // ---- 加速度Zの判定 ----
+      float accelZ = Return_AccelZ();  // Gravity_Z の値が返る
+      if (accelZ > ACCEL_THRESHOLD) {
+        overGcount++;
+      } else {
+        overGcount = 0;
+      }
+
+      // ---- 気圧の判定 ----
+      float currentPressure = Return_Pressure();  // 実際の気圧センサ値を取得
+      if (currentPressure < prevPressure) {
+        decreaseCount++;
+      } else {
+        decreaseCount = 0;
+      }
+      prevPressure = currentPressure;
 
 
-        if () {
-          時間経過AND燃焼終了
 
+
+
+      // ---- 条件成立 ----
+      if (overGcount >= REQUIRED_COUNT || decreaseCount >= REQUIRED_COUNT) {// ジャイロと気圧の連続性条件分岐文
+
+        checkBurnEnd();
+        if (burnEndFlag ) {
+          Serial.println("解放します！！");
         }
 
 
 
+        // 一度出力後にリセット
+        //overGcount = 0;
+        //decreaseCount = 0;
       }
-
-
-
     }
-  */
+
+  }
 
 
 
@@ -112,11 +163,6 @@ void loop() {
 
 
 
-
-
-
-
-  //送信情報"開始信号　時間　気圧　高度　温度　加速度XYZ　ジャイロZYX　緯度　経度　解放否か　フライトピン否か　終了信号"
   //Sent_TWELITE();
 
 }

@@ -98,7 +98,18 @@ void Read_BNO055() {
 
 
     //double val_BNO055[22] = {orientationData.orientation.x, orientationData.orientation.y, orientationData.orientation.z, angVelocityData.gyro.x, angVelocityData.gyro.y, angVelocityData.gyro.z, linearAccelData.acceleration.x, linearAccelData.acceleration.y, linearAccelData.acceleration.z, magnetometerData.magnetic.x, magnetometerData.magnetic.y, magnetometerData.magnetic.z, accelerometerData.acceleration.x, accelerometerData.acceleration.y, accelerometerData.acceleration.z, gravityData.acceleration.x, gravityData.acceleration.y, gravityData.acceleration.z, boardTemp, gyro, accel, mag};
-    double val_BNO055[10] = {accelerometerData.acceleration.x, accelerometerData.acceleration.y, accelerometerData.acceleration.z, gravityData.acceleration.x, gravityData.acceleration.y, gravityData.acceleration.z, boardTemp, gyro, accel, mag};
+    double val_BNO055[10] = {
+      accelerometerData.acceleration.x,
+      accelerometerData.acceleration.y,
+      accelerometerData.acceleration.z,
+      gravityData.acceleration.x,
+      gravityData.acceleration.y,
+      gravityData.acceleration.z,
+      static_cast<double>(boardTemp),  // 明示的に double に変換
+      static_cast<double>(gyro),
+      static_cast<double>(accel),
+      static_cast<double>(mag)
+    };
     storeData(val_BNO055, 10);
 
 
@@ -113,6 +124,6 @@ void Read_BNO055() {
 
 }
 
-double Return_Gravity_Z() {
+double Return_AccelZ() {
   return Gravity_Z;
 }

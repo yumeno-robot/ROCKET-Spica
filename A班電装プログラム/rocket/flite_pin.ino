@@ -1,8 +1,4 @@
 
-bool Write_Sd_FirstTIME = false;
-double Flight = false;
-double flight_time;
-
 void Read_filtepin() {
 
   int situation_flitepin = analogRead(28);
