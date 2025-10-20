@@ -6,12 +6,11 @@ TinyGPSPlus gps;
 
 void Setup_GPS() {
   Serial1.begin(9600);
-
-
 }
 
-void Read_GPS() {
 
+
+void Read_GPS() {
   double Latitude;
   double Longitude;
   double Altitude;
@@ -20,18 +19,22 @@ void Read_GPS() {
     gps.encode(Serial1.read());
 
     if (gps.location.isUpdated()) {
-      Serial.print("Latitude: ");
       Latitude = gps.location.lat();
-      Serial.println(Latitude, 6);
-      Serial.print("Longitude: ");
       Longitude = gps.location.lng();
-      Serial.println(gps.location.lng(), 6);
+      if (debug) {
+        Serial.print("Latitude: ");
+        Serial.println(Latitude, 6);
+        Serial.print("Longitude: ");
+        Serial.println(gps.location.lng(), 6);
+      }
     }
 
     if (gps.altitude.isUpdated()) {
-      Serial.print("Altitude (m): ");
       Altitude = gps.altitude.meters();
-      Serial.println(Altitude);
+      if (debug) {
+        Serial.print("Altitude (m): ");
+        Serial.println(Altitude);
+      }
     }
   }
 

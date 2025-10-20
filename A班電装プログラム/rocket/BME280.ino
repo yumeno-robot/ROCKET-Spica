@@ -30,15 +30,28 @@ void Setup_BME280() {
 }
 
 
+double Temperature;
+double Pressure;
+double Approx;
+double Humidity;
+
+
+
 void Read_BME280() {
+
+  Temperature = 0;
+  Pressure = 0;
+  Approx = 0;
+  Humidity = 0;
+
 
   if (error_BNE280) {
     bme.takeForcedMeasurement();
 
-    double Temperature = bme.readTemperature();
-    double Pressure = bme.readPressure() / 100.0F;
-    double Approx = bme.readAltitude(SEALEVELPRESSURE_HPA);
-    double Humidity = bme.readHumidity();
+     Temperature = bme.readTemperature();
+     Pressure = bme.readPressure() / 100.0F;
+     Approx = bme.readAltitude(SEALEVELPRESSURE_HPA);
+     Humidity = bme.readHumidity();
 
 
     if (debug) {
@@ -73,11 +86,15 @@ void Read_BME280() {
     //Make_Twelite_Log(Approx);
     //Make_Twelite_Log(Humidity);
 
-
   } else {
     if (debug) {
       Serial.println("NO BEM280__________________________________________");
     }
   }
 
+}
+
+
+double Return_Pressure() {
+  return Pressure;
 }

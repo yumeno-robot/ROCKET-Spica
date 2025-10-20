@@ -95,21 +95,6 @@ void servo(int power) {
 
 
 
-int Read_tlg_motor() {
-  int y = analogRead(27);
-  int return_y;
-  if (y > 500) {
-    return_y = 1;
-  } else {
-    return_y = 0;
-  }
-  //if (debug) {
-  Serial.println(return_y);
-  //}
-  return return_y;
-}
-
-
 int Read_foto() {
   int y = analogRead(26);
   int return_y;
@@ -124,21 +109,3 @@ int Read_foto() {
   //}
   return return_y;
 }
-
-
-/*
-
-  int Read_flite_pin() {
-  int y = analogRead(28);
-  int return_y;
-  if (y > 500) {
-    return_y = 1;
-  } else {
-    return_y = 0;
-  }
-  //if (debug) {
-  Serial.println(return_y);
-  //}
-  return return_y;
-  }
-*/

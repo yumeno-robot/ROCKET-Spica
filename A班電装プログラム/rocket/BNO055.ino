@@ -28,10 +28,14 @@ void Setup_BNO055() {
 
 
 
+double Gravity_Z;
+
+
+
 
 void Read_BNO055() {
 
-
+  Gravity_Z = 0;
 
   if (error_BNO055) {
     // 各種データ取得
@@ -82,7 +86,7 @@ void Read_BNO055() {
       Serial.print("X=");   Serial.print(gravityData.acceleration.x);   Serial.print("\t");
       Serial.print("Y=");  Serial.print(gravityData.acceleration.y);   Serial.print("\t");
       Serial.print("Z=");  Serial.print(gravityData.acceleration.z);   Serial.println("\t");
-
+      Gravity_Z = gravityData.acceleration.z;
       Serial.print("Temperature: "); Serial.println(boardTemp);
 
       Serial.print("Calibration: Sys="); Serial.print(system); Serial.println("\t");
@@ -93,10 +97,12 @@ void Read_BNO055() {
     //delay(BNO055_SAMPLERATE_DELAY_MS);
 
 
-
     //double val_BNO055[22] = {orientationData.orientation.x, orientationData.orientation.y, orientationData.orientation.z, angVelocityData.gyro.x, angVelocityData.gyro.y, angVelocityData.gyro.z, linearAccelData.acceleration.x, linearAccelData.acceleration.y, linearAccelData.acceleration.z, magnetometerData.magnetic.x, magnetometerData.magnetic.y, magnetometerData.magnetic.z, accelerometerData.acceleration.x, accelerometerData.acceleration.y, accelerometerData.acceleration.z, gravityData.acceleration.x, gravityData.acceleration.y, gravityData.acceleration.z, boardTemp, gyro, accel, mag};
     double val_BNO055[10] = {accelerometerData.acceleration.x, accelerometerData.acceleration.y, accelerometerData.acceleration.z, gravityData.acceleration.x, gravityData.acceleration.y, gravityData.acceleration.z, boardTemp, gyro, accel, mag};
     storeData(val_BNO055, 10);
+
+
+
 
   } else {
     if (debug) {
@@ -105,4 +111,8 @@ void Read_BNO055() {
   }
 
 
+}
+
+double Return_Gravity_Z() {
+  return Gravity_Z;
 }

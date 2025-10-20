@@ -22,6 +22,9 @@ bool debug = false;     //serial.printをloop関数内でやるか否なか
 bool motor_flag = false;//トワイライトによるフラグ
 bool motor_forced_open = false;
 
+
+
+
 void setup() {
   delay(5000);
   Serial.begin(115200);
@@ -54,34 +57,66 @@ void loop() {
     Serial.println("start__________________________________");
   }
 
+  Read_Twilight();
+  Read_BME280();
+  Read_Twilight();
+  Read_BNO055();
+  Read_Twilight();
+  Read_GPS();
+  controlMotor();
+
+  //SD書き込みコール
+  writeRequest = true;
+
+
+  //___________以下にアルゴリズム追加____________________________
+
+
+  //燃焼終了しているか否か　
+  //フライトピンが抜けているか否か OK
+  //フライトピン時間            OK
+  //気圧の直接値　　return
+  //加速度直接値   return
+  Read_filtepin();
+
+
   /*
-    if ((Read_tlg_motor() == 0) || (motor_flag == true)) {
-      servo(90);//開ける
-    } else {
-      servo(0);//閉じる
+
+    if (Flight) {
+      フライトピンが空いていれば
+
+
+      if () {
+        加速度センサーOR気圧センサー
+
+
+        if () {
+          時間経過AND燃焼終了
+
+        }
+
+
+
+      }
+
+
 
     }
   */
 
 
-  Read_Twilight();
-  //Read_BME280();
-  Read_Twilight();
-  ////Read_BNO055();
-  Read_Twilight();
-  //Read_GPS();
-  controlMotor();
 
-  //SD書き込みコール
-  //writeRequest = true;
+
+
+
+
+
+
+
+
 
 
   //送信情報"開始信号　時間　気圧　高度　温度　加速度XYZ　ジャイロZYX　緯度　経度　解放否か　フライトピン否か　終了信号"
-  //Make_Twelite_Log(617);
-  //Make_Twelite_Log(2);
-  //Make_Twelite_Log(54);
-  //Make_Twelite_Log(87);
-  //Make_Twelite_Log(567);
   //Sent_TWELITE();
 
 }
