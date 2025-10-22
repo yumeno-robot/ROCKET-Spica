@@ -9,6 +9,7 @@ void Read_filtepin() {
     Flight = true;
     Write_Sd_FirstTIME = true;
     //Serial.println("フライトピン　切れた。");
+    
   }
 
 }

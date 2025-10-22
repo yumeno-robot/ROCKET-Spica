@@ -52,11 +52,11 @@ bool Flight = false;
 //double flight_time;
 
 bool Launch_completed = false;//発射が完全にOK出たらtrueになる
-unsigned long Launch_completion_time;
+double Launch_completion_time;
 bool First_Launch_completion = false;//一回だけ時間を書けるようにするやつ
 
 void setup() {
-  delay(5000);
+  delay(4000);
   Serial.begin(115200);
 
   Setup_other_pin();
@@ -98,11 +98,6 @@ void loop() {
   Read_GPS();
   controlMotor();
 
-  //___________SD書き込みコール______________________________
-  writeRequest = true;
-
-
-
 
 
 
@@ -110,13 +105,10 @@ void loop() {
 
 
 
-
-
-
   //prevMillis=前回処理を実行した時刻
   //interval=どのくらいの間隔で処理をしたいか200ミリ秒だから20回分
   //20ミリ秒に一度だけ実行する(以下全部において)
-  unsigned long now = millis();
+  double now = millis();
   if (now - prevMillis >= interval) {
     prevMillis = now;
 
@@ -221,7 +213,18 @@ void loop() {
 
 
 
-  //Sent_TWELITE();
+
+
+
+  //_____________________SD書き込みコール______________________________
+  double ROCKET_TIME[2] = {now, Launch_completion_time};
+  storeData(ROCKET_TIME, 2);
+  writeRequest = true;
+
+
+
+  //___________トワイライトに送信________________________________________
+  Sent_TWELITE();
 
 }
 
