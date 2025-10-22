@@ -7,11 +7,14 @@ void Read_filtepin() {
   } else if (situation_flitepin > 500 && Write_Sd_FirstTIME == false) {//初めて開いた。
     Flight = true;
     Write_Sd_FirstTIME = true;
-    flight_time = millis();
+
   }
 
 }
 
-int Return_Filght_time() {
+
+/*
+  int Return_Filght_time() {
   return flight_time;
-}
+  }
+*/
