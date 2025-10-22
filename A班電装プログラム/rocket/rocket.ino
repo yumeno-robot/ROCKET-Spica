@@ -30,7 +30,7 @@ const unsigned long interval = 10;// [ms] ループ周期（10msごとに監視�
 // 加速度Z監視用(アルゴリズム用)
 int overGcount = 0;
 const float ACCEL_THRESHOLD = 19.6;// 2G = 9.8 * 2 [m/s^2]
-const int CONTINUE_TIME_MS = 200;// 継続時間 [ms]
+const int CONTINUE_TIME_MS = 150;// 継続時間 [ms]___________________________________________________________
 const int REQUIRED_COUNT = CONTINUE_TIME_MS / interval;
 
 // 気圧監視用(アルゴリズム用)
@@ -128,7 +128,7 @@ void loop() {
 
     //もしフライトピンが抜けていたら以下を実行
     if (Flight) {
-
+      Serial.println("フライトピン　切れた。");
 
 
       // ---- 加速度Zの判定 ----
@@ -169,9 +169,10 @@ void loop() {
       if (overGcount >= REQUIRED_COUNT || decreaseCount >= REQUIRED_COUNT) {// ジャイロと気圧の連続性条件分岐文
         Launch_completed = true;
         if (!First_Launch_completion) {
+          Serial.println("離床しました。");
           Launch_completion_time = millis();
+          First_Launch_completion = true;
         }
-        First_Launch_completion = true;
       }
 
 
@@ -181,12 +182,14 @@ void loop() {
         // 1. Z軸が一度 2G を超えたかチェック
         if (z >= ACCEL_THRESHOLD_HIGH) {
           accelOver2G = true;// 2G超えたら「燃焼中」と判定
+          Serial.println("燃焼中です。");
         }
 
         // 2. 2G超過済みなら、閾値を下回ったかチェック
         if (accelOver2G && z <= ACCEL_THRESHOLD_LOW) {
           burnEndFlag = true;       // 2Gを超えたあとに9m/s²以下になった → 燃焼終了
           //accelOver2G = false;      // 状態リセット（必要に応じて）
+          Serial.println("燃焼終了しました。");
         }
       }
       /*
@@ -199,8 +202,7 @@ void loop() {
 
 
 
-      if (burnEndFlag && (millis() - Launch_completion_time > 20)) {
-
+      if (burnEndFlag && (millis() - Launch_completion_time > 10000)) {
         Serial.println("解放します！！");
       }
 

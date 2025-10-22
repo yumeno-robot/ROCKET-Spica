@@ -7,9 +7,9 @@ int Read_tlg_motor() {
   } else {
     return_y = 0;
   }
-  //if (debug) {
+  if (debug) {
   Serial.println(return_y);
-  //}
+  }
   return return_y;
 }
 

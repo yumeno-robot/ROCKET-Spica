@@ -104,8 +104,8 @@ int Read_foto() {
   } else {
     return_y = 0;
   }
-  //if (debug) {
-  Serial.println(return_y);
-  //}
+  if (debug) {
+    Serial.println(return_y);
+  }
   return return_y;
 }
