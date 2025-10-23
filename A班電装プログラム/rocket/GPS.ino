@@ -39,6 +39,9 @@ void Read_GPS() {
   }
 
 
+  double val_GPS[3] = {Latitude, Longitude, Altitude};
+  storeData(val_GPS, 3);
+
   Make_Twelite_Log(Latitude);
   Make_Twelite_Log(Longitude);
   Make_Twelite_Log(Altitude);

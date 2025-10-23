@@ -3,7 +3,7 @@
 #include <SD.h>
 
 //SDカード書き込み必須グローバル変数
-const int Data_Nunber_Of_Pieces = 20;
+const int Data_Nunber_Of_Pieces = 25;
 volatile double writeData[Data_Nunber_Of_Pieces];
 volatile bool writeRequest = false;
 volatile int writeIndex = 0;    // 現在の書き込み位置
@@ -55,6 +55,12 @@ bool Launch_completed = false;//発射が完全にOK出たらtrueになる
 double Launch_completion_time;
 bool First_Launch_completion = false;//一回だけ時間を書けるようにするやつ
 
+
+//書き込み速度が読み込み速度がより低下した場合、値がずれていくことがある。それを防ぐためのフラグ。
+bool SD_WRITE_NOW = false;
+
+
+
 void setup() {
   delay(4000);
   Serial.begin(115200);
@@ -95,7 +101,7 @@ void loop() {
   Read_Twilight();
   Read_BNO055();
   Read_Twilight();
-  Read_GPS();
+  //Read_GPS();
   controlMotor();
 
 
@@ -142,7 +148,7 @@ void loop() {
 
       // ---- 気圧の判定 ----
       float currentPressure = Return_Pressure();  // 実際の気圧センサ値を取得
-      if (currentPressure < prevPressure) {//_________今回のデータ(currentPressure)が前回のデータ(prevPressure)を越しているか否か。越していれば＋＋でなければリセット
+      if (currentPressure <= prevPressure) {//_________今回のデータ(currentPressure)が前回のデータ(prevPressure)を越しているか否か。越していれば＋＋でなければリセット
         decreaseCount++;
       } else {
         decreaseCount = 0;
@@ -195,6 +201,7 @@ void loop() {
 
 
       if (burnEndFlag && (millis() - Launch_completion_time > 10000)) {
+        motor_flag = true;
         Serial.println("解放します！！");
       }
 
@@ -213,14 +220,14 @@ void loop() {
 
 
 
-
-
-
   //_____________________SD書き込みコール______________________________
-  double ROCKET_TIME[2] = {now, Launch_completion_time};
-  storeData(ROCKET_TIME, 2);
-  writeRequest = true;
+  double ROCKET_TIME[2] = {Launch_completion_time, 0};
+  storeData(ROCKET_TIME, 1);
 
+  while (SD_WRITE_NOW) {
+    delay(1);
+  }
+  writeRequest = true;
 
 
   //___________トワイライトに送信________________________________________
@@ -232,17 +239,16 @@ void loop() {
 
 
 
-
-
-
-
-
 void loop1() {
-  if (error_SD) {
-    if (writeRequest) {
+  if (error_SD) {//SDカードが開けなかったら何もできない。
+
+    SD_WRITE_NOW = true;//書き込み中にはセンサー結果配列の作成を停止。
+
+    if (writeRequest) {//フラグが立ったなら以下を実行
+
       File dataFile = SD.open("datalog.txt", FILE_WRITE);
 
-      if (dataFile) {
+      if (dataFile) {//ファイルに書きます。
         dataFile.print(millis());
         dataFile.print(",");
         for (int i = 0; i < writeIndex; i++) {
@@ -253,6 +259,8 @@ void loop1() {
         dataFile.flush();
         dataFile.close();
       }
+
+
       if (debug) {
         Serial.println("SD書き込み完了");
       }
@@ -260,6 +268,10 @@ void loop1() {
       writeIndex = 0;
       writeRequest = false;
     }
+
+    SD_WRITE_NOW = false;
+
+
   } else {
     if (debug) {
       Serial.println("NO SD______________________________________________");
