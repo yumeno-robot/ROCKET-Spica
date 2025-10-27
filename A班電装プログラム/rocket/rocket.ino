@@ -30,7 +30,7 @@ const unsigned long interval = 10;// [ms] ループ周期（10msごとに監視�
 // 加速度Z監視用(アルゴリズム用)
 int overGcount = 0;
 const float ACCEL_THRESHOLD = 19.6;// 2G = 9.8 * 2 [m/s^2]
-const int CONTINUE_TIME_MS = 150;// 継続時間 [ms]___________________________________________________________
+const int CONTINUE_TIME_MS = 50;// 継続時間 [ms]___________________________________________________________
 const int REQUIRED_COUNT = CONTINUE_TIME_MS / interval;
 
 // 気圧監視用(アルゴリズム用)
@@ -52,7 +52,7 @@ bool Flight = false;
 //double flight_time;
 
 bool Launch_completed = false;//発射が完全にOK出たらtrueになる
-double Launch_completion_time;
+unsigned long Launch_completion_time;
 bool First_Launch_completion = false;//一回だけ時間を書けるようにするやつ
 
 
@@ -89,13 +89,15 @@ void setup1() {
 
 
 void loop() {
+  //______________デバック用______________________________________
   if (debug) {
     Serial.println("start__________________________________");
   }
 
 
 
-  //______________全センサー値の取得__________________________
+
+  //______________全センサー値の取得_______________________________
   Read_Twilight();
   Read_BME280();
   Read_Twilight();
@@ -110,28 +112,25 @@ void loop() {
   //___________以下にアルゴリズム追加____________________________
 
 
-
   //prevMillis=前回処理を実行した時刻
-  //interval=どのくらいの間隔で処理をしたいか200ミリ秒だから20回分
-  //20ミリ秒に一度だけ実行する(以下全部において)
-  double now = millis();
+  //interval=どのくらいの間隔で処理をしたいか200ミリ秒だから20回分※20ミリ秒に一度だけ実行する
+  unsigned long now = millis();
   if (now - prevMillis >= interval) {
     prevMillis = now;
+
 
 
     //_____________________________________________________________________________________以下離床検出プログラム_____________________________________________________________________________________
 
     Read_filtepin();//フライトピンの確認
 
-
-    //もしフライトピンが抜けていたら以下を実行
-    if (Flight) {
-      Serial.println("フライトピン　切れた。");
+    if (Flight) { //もしフライトピンが抜けていたら以下を実行
+      Serial.println("フライトピン抜けた");
 
 
       // ---- 加速度Zの判定 ----
       float accelZ = Return_AccelZ();  // Z軸加速度を取得
-      if (accelZ > ACCEL_THRESHOLD) {//______読んだ値が19.8m/s^2を越しているか否か。越してたら＋＋でなければリセット
+      if (accelZ > ACCEL_THRESHOLD) {//______読んだ値(accelZ)が19.8m/s^2(ACCEL_THRESHOLD)を越しているか否か。越してたら＋＋でなければリセット
         overGcount++;
       } else {
         overGcount = 0;
@@ -148,7 +147,7 @@ void loop() {
 
       // ---- 気圧の判定 ----
       float currentPressure = Return_Pressure();  // 実際の気圧センサ値を取得
-      if (currentPressure <= prevPressure) {//_________今回のデータ(currentPressure)が前回のデータ(prevPressure)を越しているか否か。越していれば＋＋でなければリセット
+      if (currentPressure < prevPressure) {//_________今回のデータ(currentPressure)が前回のデータ(prevPressure)を越しているか否か。越していれば＋＋でなければリセット
         decreaseCount++;
       } else {
         decreaseCount = 0;
@@ -164,9 +163,17 @@ void loop() {
 
 
       //_______________________________________________________________以下条件達成の場合減速装置放出機構動作プログラム___________________________________________________________________________
-      if (overGcount >= REQUIRED_COUNT || decreaseCount >= REQUIRED_COUNT) {// ジャイロと気圧の連続性条件分岐文
+      if (overGcount >= REQUIRED_COUNT || decreaseCount >= REQUIRED_COUNT) {// 「ジャイロが連続して増加している」もしくは「気圧が連続して低下している」場合離床したと判断する。
         Launch_completed = true;
         if (!First_Launch_completion) {
+          Serial.println("離床しました。");
+          Serial.println("離床しました。");
+          Serial.println("離床しました。");
+          Serial.println("離床しました。");
+          Serial.println("離床しました。");
+          Serial.println("離床しました。");
+          Serial.println("離床しました。");
+          Serial.println("離床しました。");
           Serial.println("離床しました。");
           Launch_completion_time = millis();
           First_Launch_completion = true;
@@ -200,7 +207,7 @@ void loop() {
 
 
 
-      if (burnEndFlag && (millis() - Launch_completion_time > 10000)) {
+      if ((burnEndFlag && (millis() - Launch_completion_time > 10000))/*||(millis() - Launch_completion_time > 10000)*/) {
         motor_flag = true;
         Serial.println("解放します！！");
       }
@@ -208,11 +215,11 @@ void loop() {
 
 
 
-
-      // 一度出力後にリセット
-      //overGcount = 0;
-      //decreaseCount = 0;
-
+      /*
+           これを有効にした場合連続した、というのが蓄積されなくなる。これをIFで囲ってあげてると燃焼後また離床検出することが可能。
+            overGcount = 0;
+            decreaseCount = 0;
+      */
 
 
     }//フライトピン終了カッコ
@@ -220,14 +227,24 @@ void loop() {
 
 
 
-  //_____________________SD書き込みコール______________________________
-  double ROCKET_TIME[2] = {Launch_completion_time, 0};
+
+  //__________________________SD書き込みコール__________________________________
+  unsigned long ROCKET_TIME[2] = {Launch_completion_time, 0};//離床時間をSDカードに保存するやつ。
   storeData(ROCKET_TIME, 1);
 
   while (SD_WRITE_NOW) {
     delay(1);
   }
   writeRequest = true;
+  /*
+    ※※※※上のwhileについて。※※※※
+    ・これは２コアで動いている。そのため、loop1の書き込み動作ではフラグの有無で書き込み処理が行われる。
+    loopよりloop1のほうが処理が速かった場合すべてのデータを配列に入れた瞬間書き込まれるためうまく動作する。
+    しかし、loop1よりloopの方が速かった場合書き込みする前に配列にどんどんデータが入っていくためずれていく。
+    それをなくすため、書き込み中は配列に数値を代入しないようにフラグを立てている。
+  */
+
+
 
 
   //___________トワイライトに送信________________________________________

@@ -59,8 +59,8 @@ void Setup_SD() {
 
 
 
-
-void storeData(double values[], int count) {
+/*
+  void storeData(double values[], int count) {
   for (int i = 0; i < count; i++) {
     if (writeIndex < Data_Nunber_Of_Pieces) {
       writeData[writeIndex] = values[i];
@@ -69,6 +69,20 @@ void storeData(double values[], int count) {
       // 満杯なら自動的に書き込み要求
       writeRequest = true;
       break; // 満杯なので終了
+    }
+  }
+  }
+*/
+
+template <typename T>
+void storeData(T values[], int count) {
+  for (int i = 0; i < count; i++) {
+    if (writeIndex < Data_Nunber_Of_Pieces) {
+      writeData[writeIndex] = (double)values[i];  // どんな型でもdouble化して保存
+      writeIndex++;
+    } else {
+      writeRequest = true;
+      break;
     }
   }
 }
