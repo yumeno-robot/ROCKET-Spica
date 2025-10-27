@@ -48,10 +48,10 @@ void Read_BME280() {
   if (error_BNE280) {
     bme.takeForcedMeasurement();
 
-     Temperature = bme.readTemperature();
-     Pressure = bme.readPressure() / 100.0F;
-     Approx = bme.readAltitude(SEALEVELPRESSURE_HPA);
-     Humidity = bme.readHumidity();
+    Temperature = bme.readTemperature();
+    Pressure = bme.readPressure() / 100.0F;
+    Approx = bme.readAltitude(SEALEVELPRESSURE_HPA);
+    Humidity = bme.readHumidity();
 
 
     if (debug) {
@@ -79,8 +79,11 @@ void Read_BME280() {
     }
 
 
-    double val_BME280[4] = {Temperature, Pressure, Approx, Humidity};
-    storeData(val_BME280, 4);
+    if (!SD_WRITE_NOW) {
+      double val_BME280[4] = {Temperature, Pressure, Approx, Humidity};
+      storeData(val_BME280, 4);
+    }
+    
     //Make_Twelite_Log(Temperature);
     //Make_Twelite_Log(Pressure);
     //Make_Twelite_Log(Approx);

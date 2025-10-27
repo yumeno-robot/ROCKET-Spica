@@ -58,6 +58,26 @@ void Setup_SD() {
 }
 
 
+template <typename T>
+void storeData(T values[], int count) {
+  // SD書き込み中は即リターン（データの整合性優先）
+  if (SD_WRITE_NOW) return;
+
+  for (int i = 0; i < count; i++) {
+    if (writeIndex < Data_Nunber_Of_Pieces) {
+      writeData[writeIndex] = (double)values[i];
+      writeIndex++;
+    } else {
+      writeRequest = true;
+      break;
+    }
+  }
+}
+
+
+
+
+//_____以下試行錯誤失敗品______________
 
 /*
   void storeData(double values[], int count) {
@@ -73,9 +93,9 @@ void Setup_SD() {
   }
   }
 */
-
-template <typename T>
-void storeData(T values[], int count) {
+/*
+  template <typename T>
+  void storeData(T values[], int count) {
   for (int i = 0; i < count; i++) {
     if (writeIndex < Data_Nunber_Of_Pieces) {
       writeData[writeIndex] = (double)values[i];  // どんな型でもdouble化して保存
@@ -85,4 +105,24 @@ void storeData(T values[], int count) {
       break;
     }
   }
-}
+  }
+*/
+
+/*
+
+  template <typename T>
+  void storeData(T values[], int count) {
+  // SD書き込み中はデータを触らない
+  if (SD_WRITE_NOW) return;
+
+  for (int i = 0; i < count; i++) {
+    if (writeIndex < Data_Nunber_Of_Pieces) {
+      writeData[writeIndex] = (double)values[i];
+      writeIndex++;
+    } else {
+      writeRequest = true;  // バッファがいっぱい → 書き込み要求
+      break;
+    }
+  }
+  }
+*/
