@@ -232,7 +232,7 @@ void loop() {
   unsigned long ROCKET_TIME[2] = {Launch_completion_time, 0};//離床時間をSDカードに保存するやつ。
   storeData(ROCKET_TIME, 2);
 
-  while (SD_WRITE_NOW) {
+  while (SD_WRITE_NOW || writeRequest) {
     delay(1);
   }
   writeRequest = true;
@@ -281,6 +281,7 @@ void loop1() {
             delayMicroseconds(1);
           }
           dataFile.println();
+          delayMicroseconds(5);
           dataFile.flush();
           dataFile.close();
           delay(5);
