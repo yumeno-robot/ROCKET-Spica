@@ -91,21 +91,3 @@ void LED_GPS() {
 void servo(int power) {
   myservo.write(power);
 }
-
-
-
-
-int Read_foto() {
-  int y = analogRead(26);
-  int return_y;
-  if (y > 500) {
-    return_y = 1;
-    motor_flag = true;
-  } else {
-    return_y = 0;
-  }
-  if (debug) {
-    Serial.println(return_y);
-  }
-  return return_y;
-}

@@ -30,7 +30,7 @@ const unsigned long interval = 10;// [ms] ループ周期（10msごとに監視�
 // 加速度Z監視用(アルゴリズム用)
 int overGcount = 0;
 const float ACCEL_THRESHOLD = 19.6;// 2G = 9.8 * 2 [m/s^2]
-const int CONTINUE_TIME_MS = 50;// 継続時間 [ms]___________________________________________________________
+const int CONTINUE_TIME_MS = 20;// 継続時間 [ms]___________________________________________________________________
 const int REQUIRED_COUNT = CONTINUE_TIME_MS / interval;
 
 // 気圧監視用(アルゴリズム用)
@@ -56,6 +56,9 @@ unsigned long Launch_completion_time;
 bool First_Launch_completion = false;//一回だけ時間を書けるようにするやつ
 
 
+bool First_Release_completion = false;//一回だけ時間を書けるようにするやつ
+unsigned long Release_completion_time;
+
 //書き込み速度が読み込み速度がより低下した場合、値がずれていくことがある。それを防ぐためのフラグ。
 bool SD_WRITE_NOW = false;
 
@@ -71,6 +74,8 @@ void setup() {
   File dataFile = SD.open("datalog.txt", FILE_WRITE);
   delay(50);
   dataFile.print("2025年御宿共同打ち上げ実験　AチームログSTART");
+  dataFile.println();
+  dataFile.print("経過時間,温度,気圧,高度,湿度,加速度x,加速度y,加速度z,重力x,重力y,重力z,温度,ジャイロ,加速度,mag,緯度,経度,高度,離床時間,解放時間");
   dataFile.println();
   dataFile.flush();
   dataFile.close();
@@ -103,7 +108,7 @@ void loop() {
   Read_Twilight();
   Read_BNO055();
   Read_Twilight();
-  //Read_GPS();
+  Read_GPS();
   controlMotor();
 
 
@@ -210,6 +215,7 @@ void loop() {
       if ((burnEndFlag && (millis() - Launch_completion_time > 10000))/*||(millis() - Launch_completion_time > 10000)*/) {
         motor_flag = true;
         Serial.println("解放します！！");
+        Read_foto();
       }
 
 
@@ -229,7 +235,7 @@ void loop() {
 
 
   //__________________________SD書き込みコール__________________________________
-  unsigned long ROCKET_TIME[2] = {Launch_completion_time, 0};//離床時間をSDカードに保存するやつ。
+  unsigned long ROCKET_TIME[2] = {Launch_completion_time, Release_completion_time};//離床時間をSDカードに保存するやつ。
   storeData(ROCKET_TIME, 2);
 
   while (SD_WRITE_NOW || writeRequest) {
