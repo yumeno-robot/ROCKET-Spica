@@ -242,6 +242,10 @@ void loop() {
     delay(1);
   }
   writeRequest = true;
+  Make_Twelite_Log(Launch_completion_time);
+  Make_Twelite_Log(Release_completion_time);
+
+
   /*
     ※※※※上のwhileについて。※※※※
     ・これは２コアで動いている。そのため、loop1の書き込み動作ではフラグの有無で書き込み処理が行われる。

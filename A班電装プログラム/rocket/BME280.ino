@@ -84,10 +84,10 @@ void Read_BME280() {
       storeData(val_BME280, 4);
     }
     
-    //Make_Twelite_Log(Temperature);
-    //Make_Twelite_Log(Pressure);
-    //Make_Twelite_Log(Approx);
-    //Make_Twelite_Log(Humidity);
+    Make_Twelite_Log(Temperature);
+    Make_Twelite_Log(Pressure);
+    Make_Twelite_Log(Approx);
+    Make_Twelite_Log(Humidity);
 
   } else {
     if (debug) {

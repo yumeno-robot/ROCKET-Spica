@@ -40,7 +40,7 @@ void Read_GPS() {
 
   if (!SD_WRITE_NOW) {
     double val_GPS[3] = {Latitude, Longitude, Altitude};
-    //storeData(val_GPS, 3);
+    storeData(val_GPS, 3);
   }
 
   Make_Twelite_Log(Latitude);
