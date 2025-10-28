@@ -47,6 +47,7 @@ void Sent_TWELITE() {
   }
   //Serial.print(",FINISH\n");
   Reset_Twelite_Log = true;
+
 }
 
 
@@ -81,6 +82,7 @@ int rxIndex = 0;                // 現在の受信位置
 // -------------------------------------------------
 void Read_Twilight() {
   while (Serial2.available() > 0) {   // Twilightが接続されているシリアルポート
+    delay(100);
     char c = Serial2.read();          // 1文字受信
 
     if (c == '\n' || c == '\r') {     // 改行が来たら処理
@@ -90,17 +92,20 @@ void Read_Twilight() {
         Serial.println(rxBuffer);     // まとめて出力
 
         if (strcmp(rxBuffer, "あける") == 0) {
-          Serial.println("ok");
+          Serial.println("「開ける」受信したわーーーーーーー！！ok");
           motor_flag = true;
         }
 
         rxIndex = 0;                  // 次のデータに備えてリセット
       }
-    }
-    else {
+
+      delay(100);
+
+    } else {
       if (rxIndex < RX_BUFFER_SIZE - 1) {
         rxBuffer[rxIndex++] = c;      // バッファに追加
       }
     }
   }
+
 }

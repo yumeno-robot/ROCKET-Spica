@@ -21,13 +21,61 @@ void setup() {
 void loop() {
   static char buffer[BUFFER_SIZE] = "";
   static uint8_t index = 0;
-  if (t1 == 0) {
+
+  if (Serial.available() > 0) {
+    String input = Serial.readStringUntil('\n'); // 改行まで受信
+    input.trim();  // 前後の空白や改行を削除
+
+    if (input == "あける") {
+      Serial.println("Serial1 に 'あける' を送信します。");
+      Serial1.println("あける");
+      Serial1.println("あける");
+      Serial1.println("あける");
+      Serial1.println("あける");
+      Serial1.println("あける");
+      Serial1.println("あける");
+      Serial1.println("あける");
+      Serial1.println("あける");
+      Serial1.println("あける");
+      Serial1.println("あける");
+      Serial1.println("あける");
+      Serial1.println("あける");
+      Serial1.println("あける");
+      Serial1.println("あける");
+
+    } else {
+      Serial.print("入力された文字列：");
+      Serial.println(input);
+    }
+  }
+
+
+  /*
+    if (t1 == 0) {
     t1 = millis();
-  } else if (millis() - t1 >= 5000) {
+    } else if (millis() - t1 >= 5000) {
+    Serial1.println("あける");
+    Serial1.println("あける");
+    Serial1.println("あける");
+    Serial1.println("あける");
+    Serial1.println("あける");
+    Serial1.println("あける");
+    Serial1.println("あける");
+    Serial1.println("あける");
+    Serial1.println("あける");
+    Serial1.println("あける");
+    Serial1.println("あける");
+    Serial1.println("あける");
+    Serial1.println("あける");
+    Serial1.println("あける");
     Serial1.println("あける");
     Serial.println("あける");
     t1 = 0;
-  }
+    }
+  */
+
+
+
   while (Serial1.available()) {
     char c = Serial1.read();
     if (c == '\n' || index >= BUFFER_SIZE - 1) {

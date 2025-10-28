@@ -105,12 +105,9 @@ void loop() {
   //______________全センサー値の取得_______________________________
   Read_Twilight();
   Read_BME280();
-  Read_Twilight();
   Read_BNO055();
-  Read_Twilight();
   Read_GPS();
   controlMotor();
-
 
 
 
