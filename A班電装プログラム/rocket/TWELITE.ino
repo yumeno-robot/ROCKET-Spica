@@ -43,6 +43,7 @@ void Sent_TWELITE() {
       //Serial.print(Log_Write_Datas[i], 3);
     }
     Serial2.print(",FINISH\n");
+    Serial2.flush();
     Serial.flush();
     delayMicroseconds(50);
 

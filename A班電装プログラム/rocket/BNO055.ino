@@ -128,6 +128,6 @@ void Read_BNO055() {
 }
 
 double Return_AccelZ() {
-  Serial.println(Gravity_Z);
+  //Serial.println(Gravity_Z);
   return Gravity_Z;
 }

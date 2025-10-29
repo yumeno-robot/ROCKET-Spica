@@ -33,10 +33,6 @@ const float ACCEL_THRESHOLD = 19.6;// 2G = 9.8 * 2 [m/s^2]
 const int CONTINUE_TIME_MS = 20;// 継続時間 [ms]___________________________________________________________________
 const int REQUIRED_COUNT = CONTINUE_TIME_MS / interval;
 
-// 気圧監視用(アルゴリズム用)
-float prevPressure = 0.0;
-int decreaseCount = 0;
-
 // 離床検知フラグ(アルゴリズム用)
 bool liftOffDetected = false;  // 離床検知済みか
 float ACCEL_THRESHOLD_HIGH = 19.6;// 2G [m/s²]
@@ -55,12 +51,19 @@ bool Launch_completed = false;//発射が完全にOK出たらtrueになる
 unsigned long Launch_completion_time;
 bool First_Launch_completion = false;//一回だけ時間を書けるようにするやつ
 
-
-bool First_Release_completion = false;//一回だけ時間を書けるようにするやつ
 unsigned long Release_completion_time;
+bool First_Release_completion = false;//一回だけ時間を書けるようにするやつ
+
+
+unsigned long Release_Signal_time;
+bool First_Release_Signal = false;//一回だけ時間を書けるようにするやつ
+
 
 //書き込み速度が読み込み速度がより低下した場合、値がずれていくことがある。それを防ぐためのフラグ。
 bool SD_WRITE_NOW = false;
+
+
+
 
 
 
@@ -75,7 +78,7 @@ void setup() {
   delay(50);
   dataFile.print("2025年御宿共同打ち上げ実験　AチームログSTART");
   dataFile.println();
-  dataFile.print("経過時間,温度,気圧,高度,湿度,加速度x,加速度y,加速度z,重力x,重力y,重力z,温度,ジャイロ,加速度,mag,緯度,経度,高度,離床時間,解放時間");
+  dataFile.print("経過時間,温度,気圧,高度,湿度,加速度x,加速度y,加速度z,重力x,重力y,重力z,温度,ジャイロ,加速度,mag,緯度,経度,高度,離床時間,解放信号出力時間,解放検出時間");
   dataFile.println();
   dataFile.flush();
   dataFile.close();
@@ -102,12 +105,16 @@ void loop() {
 
 
 
+
   //______________全センサー値の取得_______________________________
   Read_Twilight();
   Read_BME280();
   Read_BNO055();
   Read_GPS();
   controlMotor();
+
+
+
 
 
 
@@ -127,7 +134,7 @@ void loop() {
     Read_filtepin();//フライトピンの確認
 
     if (Flight) { //もしフライトピンが抜けていたら以下を実行
-      Serial.println("フライトピン抜けた");
+      Serial.println("フライトピン抜けてる");
 
 
       // ---- 加速度Zの判定 ----
@@ -145,42 +152,25 @@ void loop() {
 
 
 
-
-
-      // ---- 気圧の判定 ----
-      float currentPressure = Return_Pressure();  // 実際の気圧センサ値を取得
-      if (currentPressure < prevPressure) {//_________今回のデータ(currentPressure)が前回のデータ(prevPressure)を越しているか否か。越していれば＋＋でなければリセット
-        decreaseCount++;
-      } else {
-        decreaseCount = 0;
-      }
-      prevPressure = currentPressure;
-      /*
-        気圧が前回より下がっていたら decreaseCount++。
-        上昇中は高度が上がり気圧が下がるため、「気圧が減少している = 上昇中」と判断します。
-      */
-
-
-
-
-
       //_______________________________________________________________以下条件達成の場合減速装置放出機構動作プログラム___________________________________________________________________________
-      if (overGcount >= REQUIRED_COUNT || decreaseCount >= REQUIRED_COUNT) {// 「ジャイロが連続して増加している」もしくは「気圧が連続して低下している」場合離床したと判断する。
+      if (overGcount >= REQUIRED_COUNT) {// 「ジャイロが連続して増加している」場合離床したと判断する。
         Launch_completed = true;
         if (!First_Launch_completion) {
-          Serial.println("離床しました。");
-          Serial.println("離床しました。");
-          Serial.println("離床しました。");
-          Serial.println("離床しました。");
-          Serial.println("離床しました。");
-          Serial.println("離床しました。");
-          Serial.println("離床しました。");
-          Serial.println("離床しました。");
-          Serial.println("離床しました。");
+          Serial.println("離床完了");
+          Serial.println("離床完了。");
+          Serial.println("離床完了。");
+          Serial.println("離床完了。");
+          Serial.println("離床完了。");
+          Serial.println("離床完了。");
+          Serial.println("離床完了。");
+          Serial.println("離床完了。");
+          Serial.println("離床完了。");
           Launch_completion_time = millis();
           First_Launch_completion = true;
         }
       }
+
+
 
 
       if (Launch_completed) {
@@ -189,15 +179,22 @@ void loop() {
         // 1. Z軸が一度 2G を超えたかチェック
         if (z >= ACCEL_THRESHOLD_HIGH) {
           accelOver2G = true;// 2G超えたら「燃焼中」と判定
-          Serial.println("燃焼中です。");
         }
 
         // 2. 2G超過済みなら、閾値を下回ったかチェック
         if (accelOver2G && z <= ACCEL_THRESHOLD_LOW) {
           burnEndFlag = true;       // 2Gを超えたあとに9m/s²以下になった → 燃焼終了
           //accelOver2G = false;      // 状態リセット（必要に応じて）
-          Serial.println("燃焼終了しました。");
         }
+
+
+        if (accelOver2G && !burnEndFlag) {
+          Serial.println("燃焼中");
+        } else if (accelOver2G && burnEndFlag) {
+          Serial.println("燃焼終了");
+        }
+
+
       }
       /*
               連続して「加速度が2G超え」または「気圧が減少」した場合に、
@@ -209,8 +206,13 @@ void loop() {
 
 
 
-      if ((burnEndFlag && (millis() - Launch_completion_time > 10000))/*||(millis() - Launch_completion_time > 10000)*/) {
+      if ((burnEndFlag && (millis() - Launch_completion_time > 10000))) {
         motor_flag = true;
+        if (!First_Release_Signal) {
+          Release_Signal_time = millis();
+          First_Release_Signal = true;
+        }
+
         Serial.println("解放します！！");
         Read_foto();
       }
@@ -223,8 +225,6 @@ void loop() {
             overGcount = 0;
             decreaseCount = 0;
       */
-
-
     }//フライトピン終了カッコ
   }//20ミリ秒一回終了カッコ
 
@@ -232,8 +232,8 @@ void loop() {
 
 
   //__________________________SD書き込みコール__________________________________
-  unsigned long ROCKET_TIME[2] = {Launch_completion_time, Release_completion_time};//離床時間をSDカードに保存するやつ。
-  storeData(ROCKET_TIME, 2);
+  unsigned long ROCKET_TIME[3] = {Launch_completion_time, Release_Signal_time, Release_completion_time}; //離床時間をSDカードに保存するやつ。
+  storeData(ROCKET_TIME, 3);
 
   while (SD_WRITE_NOW || writeRequest) {
     delay(1);
@@ -265,7 +265,7 @@ void loop() {
 
 
 unsigned long lastWriteMicros = 0;
-const unsigned long sdWriteInterval = 50000; // 50ms
+const unsigned long sdWriteInterval = 50000; // 50000
 
 void loop1() {
   unsigned long currentMicros = micros();
