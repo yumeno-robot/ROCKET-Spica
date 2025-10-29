@@ -103,11 +103,6 @@ void processReceivedData(char* data) {
   // 送信機1のデータを更新してシリアル出力
   strncpy(sensorData, data, BUFFER_SIZE);
   lastReceiveTime = millis();  // 受信時刻を更新
-  Serial.print(0.000000, 6);
-  Serial.print(",");
-  Serial.print(0.000000, 6);
-  Serial.print(",");
-  Serial.print(0);
-  Serial.print(",");
+  
   Serial.println(sensorData);
 }
