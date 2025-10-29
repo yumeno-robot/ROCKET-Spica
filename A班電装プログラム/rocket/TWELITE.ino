@@ -43,6 +43,9 @@ void Sent_TWELITE() {
       //Serial.print(Log_Write_Datas[i], 3);
     }
     Serial2.print(",FINISH\n");
+    Serial.flush();
+    delayMicroseconds(50);
+
     t1 = 0;
   }
   //Serial.print(",FINISH\n");
@@ -76,36 +79,44 @@ void Sent_test_TWELITE() {
 #define RX_BUFFER_SIZE 64  // 受信バッファサイズ（必要に応じて調整）
 char rxBuffer[RX_BUFFER_SIZE];  // 受信文字列を格納
 int rxIndex = 0;                // 現在の受信位置
+bool First_reception_Twilight = false;
 
 // -------------------------------------------------
 // Twilightから1行受信して処理する関数
 // -------------------------------------------------
 void Read_Twilight() {
-  while (Serial2.available() > 0) {   // Twilightが接続されているシリアルポート
-    delay(100);
-    char c = Serial2.read();          // 1文字受信
 
-    if (c == '\n' || c == '\r') {     // 改行が来たら処理
-      if (rxIndex > 0) {
-        rxBuffer[rxIndex] = '\0';     // 文字列終端
-        Serial.print("受信データ: ");
-        Serial.println(rxBuffer);     // まとめて出力
+  if (!First_reception_Twilight) {
 
-        if (strcmp(rxBuffer, "あける") == 0) {
-          Serial.println("「開ける」受信したわーーーーーーー！！ok");
-          motor_flag = true;
+    if (Serial2.available() == 0)return;
+
+    while (Serial2.available() > 0) {   // Twilightが接続されているシリアルポート
+      delay(3);
+      char c = Serial2.read();          // 1文字受信
+
+      if (c == '\n' || c == '\r') {     // 改行が来たら処理
+        if (rxIndex > 0) {
+          rxBuffer[rxIndex] = '\0';     // 文字列終端
+          Serial.print("受信データ: ");
+          Serial.println(rxBuffer);     // まとめて出力
+
+          if (strcmp(rxBuffer, "あける") == 0) {
+            Serial.println("「開ける」受信したわーーーーーーー！！ok");
+            motor_flag = true;
+            First_reception_Twilight = true;
+          }
+
+          rxIndex = 0;                  // 次のデータに備えてリセット
         }
+        delay(3);
 
-        rxIndex = 0;                  // 次のデータに備えてリセット
-      }
-
-      delay(100);
-
-    } else {
-      if (rxIndex < RX_BUFFER_SIZE - 1) {
-        rxBuffer[rxIndex++] = c;      // バッファに追加
+      } else {
+        if (rxIndex < RX_BUFFER_SIZE - 1) {
+          rxBuffer[rxIndex++] = c;      // バッファに追加
+        }
       }
     }
   }
+
 
 }

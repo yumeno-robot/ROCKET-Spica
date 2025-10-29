@@ -13,6 +13,7 @@ Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28, &Wire);
 
 void Setup_BNO055() {
 
+
   Wire.setSDA(8);
   Wire.setSCL(9);
   Wire.begin();
