@@ -77,7 +77,7 @@ void Read_BME280() {
 
     Make_Twelite_Log(Temperature);
     Make_Twelite_Log(Pressure);
-    Make_Twelite_Log(Approx);
+    //Make_Twelite_Log(Approx);
     Make_Twelite_Log(Humidity);
 
   } else {

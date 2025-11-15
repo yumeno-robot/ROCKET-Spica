@@ -13,9 +13,9 @@ void Read_foto() {
     }
 
   }
-  //if (debug) {
-  Serial.println(y);
-  //}
+  if (debug) {
+    Serial.println(y);
+  }
 
 
 

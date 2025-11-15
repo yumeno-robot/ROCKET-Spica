@@ -30,13 +30,13 @@ const unsigned long interval = 10;// [ms] ループ周期（10msごとに監視�
 // 加速度Z監視用(アルゴリズム用)
 int overGcount = 0;
 const float ACCEL_THRESHOLD = 19.6;// 2G = 9.8 * 2 [m/s^2]
-const int CONTINUE_TIME_MS = 20;// 継続時間 [ms]___________________________________________________________________
+const int CONTINUE_TIME_MS = 200;// 継続時間 [ms]___________________________________________________________________
 const int REQUIRED_COUNT = CONTINUE_TIME_MS / interval;
 
 // 離床検知フラグ(アルゴリズム用)
 bool liftOffDetected = false;  // 離床検知済みか
-float ACCEL_THRESHOLD_HIGH = 19.6;// 2G [m/s²]
-float ACCEL_THRESHOLD_LOW  = 9.0;// 閾値下回り判定（自由落下近似）
+float ACCEL_THRESHOLD_HIGH = 19.6;// 2G [m/s²]               加速ナウか否か閾値
+float ACCEL_THRESHOLD_LOW  = 9.8;// 閾値下回り判定（自由落下近似）　加速度が下回ったか閾値
 
 // 状態管理用フラグ(アルゴリズム用)
 bool accelOver2G = false;
@@ -78,23 +78,29 @@ void setup() {
   delay(50);
   dataFile.print("2025年御宿共同打ち上げ実験　AチームログSTART");
   dataFile.println();
-  dataFile.print("経過時間,温度,気圧,高度,湿度,加速度x,加速度y,加速度z,重力x,重力y,重力z,温度,ジャイロ,加速度,mag,緯度,経度,高度,離床時間,解放信号出力時間,解放検出時間");
+  dataFile.print("経過時間,温度,気圧,高度,湿度,加速度x,加速度y,加速度z,重力x,重力y,重力z,温度,ジャイロ,加速度,地磁気,緯度,経度,高度,離床時間,解放信号出力時間,解放検出時間");
   dataFile.println();
   dataFile.flush();
   dataFile.close();
 
+  servo(0);         // 閉じる
+
+  Setup_GPS();
+  delay(500);
+
   Setup_BNO055();
   Setup_BME280();
   Setup_TWELITE();
-  Setup_GPS();
+
+
+  Read_GPS_time();
 
   buzz_start();
-  //servo(0);//閉じる
+  servo(0);//閉じる
 }
 
 void setup1() {
 }
-
 
 void loop() {
   //______________デバック用______________________________________
@@ -107,12 +113,11 @@ void loop() {
 
 
   //______________全センサー値の取得_______________________________
-  Read_Twilight();
+  //Read_Twilight();
   Read_BME280();
   Read_BNO055();
   Read_GPS();
   controlMotor();
-
 
 
 
@@ -197,7 +202,7 @@ void loop() {
 
       }
       /*
-              連続して「加速度が2G超え」または「気圧が減少」した場合に、
+              連続して「加速度が2G超え」た場合に、
               「燃焼終了」を確認します。
               もし燃焼が終わった（burnEndFlag == true）なら、「解放します！！」と出力。
       */
@@ -206,7 +211,7 @@ void loop() {
 
 
 
-      if ((burnEndFlag && (millis() - Launch_completion_time > 10000))) {
+      if ((burnEndFlag && (millis() - Launch_completion_time > 7600))) {
         motor_flag = true;
         if (!First_Release_Signal) {
           Release_Signal_time = millis();
@@ -225,7 +230,10 @@ void loop() {
             overGcount = 0;
             decreaseCount = 0;
       */
-    }//フライトピン終了カッコ
+    } else { //フライトピン終了カッコ
+      Serial.println("フライトピン抜けていない");
+    }
+
   }//20ミリ秒一回終了カッコ
 
 
